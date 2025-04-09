@@ -1,0 +1,47 @@
+{% load static tailwind_tags %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}RAG Chatbot{% endblock %}</title>
+    {% tailwind_css %}
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-indigo-600 text-white p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="{% url 'chat_home' %}" class="text-xl font-bold">RAG Chatbot</a>
+            <div class="space-x-4">
+                {% if user.is_authenticated %}
+                    {% if user.profile.is_admin %}
+                        <a href="{% url 'document_list' %}" class="hover:text-indigo-200">Documents</a>
+                    {% endif %}
+                    <span>Welcome, {{ user.username }}</span>
+                    <form method="POST" action="{% url 'logout' %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-indigo-700 px-3 py-1 rounded hover:bg-indigo-800">Logout</button>
+                    </form>                {% else %}
+                    <a href="{% url 'login' %}" class="hover:text-indigo-200">Login</a>
+                    <a href="{% url 'register' %}" class="bg-indigo-700 px-3 py-1 rounded hover:bg-indigo-800">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container mx-auto py-6 px-4">
+        {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                    <div class="p-4 rounded {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </div>
+    
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Document Management - RAG Chatbot{% endblock %}
+
+{% block content %}
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold">Document Management</h1>
+            <a href="{% url 'upload_document' %}" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+                Upload New Document
+            </a>
+        </div>
+        
+        {% if documents %}
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="p-3 text-left">Title</th>
+                            <th class="p-3 text-left">Description</th>
+                            <th class="p-3 text-left">Uploaded By</th>
+                            <th class="p-3 text-left">Date</th>
+                            <th class="p-3 text-left">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for document in documents %}
+                            <tr class="border-t hover:bg-gray-50">
+                                <td class="p-3">{{ document.title }}</td>
+                                <td class="p-3">{{ document.description|truncatechars:50 }}</td>
+                                <td class="p-3">{{ document.uploaded_by.username }}</td>
+                                <td class="p-3">{{ document.created_at|date:"M d, Y" }}</td>
+                                <td class="p-3">
+                                    {% if document.processed %}
+                                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Processed</span>
+                                    {% else %}
+                                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">Processing</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="bg-gray-50 p-6 text-center rounded">
+                <p class="text-gray-500">No documents uploaded yet.</p>
+                <a href="{% url 'upload_document' %}" class="inline-block mt-4 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+                    Upload Your First Document
+                </a>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

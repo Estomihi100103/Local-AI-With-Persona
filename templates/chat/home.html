@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Chat Home - RAG Chatbot{% endblock %}
+
+{% block content %}
+    <div class="flex flex-col md:flex-row gap-6">
+        <!-- Sidebar -->
+        <div class="w-full md:w-64 bg-white rounded-lg shadow p-4">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-bold">Your Chats</h2>
+                <form action="{% url 'create_session' %}" method="post" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700">
+                        New Chat
+                    </button>
+                </form>
+            </div>
+            
+            <div class="space-y-2">
+                {% if chat_sessions %}
+                    {% for session in chat_sessions %}
+                        <a href="{% url 'chat_detail' session.id %}" class="block p-2 rounded hover:bg-gray-100 {% if session == active_session %}bg-indigo-100{% endif %}">
+                            <div class="font-medium truncate">{{ session.title }}</div>
+                            <div class="text-xs text-gray-500">{{ session.updated_at|date:"M d, Y" }}</div>
+                        </a>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-gray-500">No chats yet. Start a new one!</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="flex-1 bg-white rounded-lg shadow p-6">
+            <h1 class="text-2xl font-bold mb-6">Welcome to AI Persona</h1>
+            <p class="mb-4">This chatbot uses Retrieval-Augmented Generation (RAG) to provide accurate answers based on your documents.</p>
+            
+            <div class="bg-indigo-50 rounded-lg p-4 mb-6">
+                <h2 class="text-lg font-semibold mb-2">How it works:</h2>
+                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                    <li>Start a new chat using the button on the left</li>
+                    <li>Ask questions related to your uploaded documents</li>
+                    <li>The chatbot will retrieve relevant information to provide accurate answers</li>
+                    <li>Your conversation history is saved for future reference</li>
+                </ul>
+            </div>
+            
+            {% if not chat_sessions %}
+                <div class="text-center">
+                    <form action="{% url 'create_session' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
+                            Start Your First Chat
+                        </button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,407 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ session.title }} - RAG Chatbot{% endblock %}
+
+{% block extra_head %}
+<!-- <style>
+    .message-container {
+        max-height: calc(100vh - 300px);
+        overflow-y: auto;
+    }
+    .typing-indicator::after {
+        content: '...';
+        animation: typing 1s infinite;
+    }
+    @keyframes typing {
+        0% { content: '.'; }
+        33% { content: '..'; }
+        66% { content: '...'; }
+    }
+</style> -->
+<style>
+    #chat-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        height: 90vh;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    #message-container {
+        flex-grow: 1;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        background-color: #f9f9f9;
+    }
+    
+    .message {
+        margin-bottom: 15px;
+        padding: 10px 15px;
+        border-radius: 18px;
+        max-width: 80%;
+        word-wrap: break-word;
+    }
+    
+    .user-message {
+        background-color: #dcf8c6;
+        align-self: flex-end;
+        margin-left: auto;
+    }
+    
+    .assistant-message {
+        background-color: #fff;
+        border: 1px solid #ddd;
+    }
+    
+    .system-message {
+        background-color: #e6e6e6;
+        color: #666;
+        font-style: italic;
+        text-align: center;
+        margin: 10px auto;
+        padding: 5px 10px;
+        border-radius: 10px;
+        max-width: 70%;
+    }
+    
+    #input-container {
+        display: flex;
+        margin-top: 10px;
+    }
+    
+    #message-input {
+        flex-grow: 1;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 8px 0 0 8px;
+        font-size: 16px;
+    }
+    
+    #send-button {
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 0 8px 8px 0;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    
+    #send-button:hover {
+        background-color: #45a049;
+    }
+    
+    /* Styling for code blocks */
+    pre {
+        background-color: #f0f0f0;
+        padding: 10px;
+        border-radius: 5px;
+        overflow-x: auto;
+    }
+    
+    code {
+        font-family: monospace;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <!-- <div class="flex flex-col md:flex-row gap-6 h-[calc(100vh-150px)]">
+        <div class="w-full md:w-64 bg-white rounded-lg shadow p-4 overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-bold">Your Chats</h2>
+                <form action="{% url 'create_session' %}" method="post" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700">
+                        New Chat
+                    </button>
+                </form>
+            </div>
+            
+            <div class="space-y-2">
+                {% for chat in chat_sessions %}
+                    <a href="{% url 'chat_detail' chat.id %}" class="block p-2 rounded hover:bg-gray-100 {% if chat.id == session.id %}bg-indigo-100{% endif %}">
+                        <div class="font-medium truncate">{{ chat.title }}</div>
+                        <div class="text-xs text-gray-500">{{ chat.updated_at|date:"M d, Y" }}</div>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="flex-1 flex flex-col bg-white rounded-lg shadow">
+            <div class="p-4 border-b">
+                <h1 class="text-xl font-bold">{{ session.title }}</h1>
+            </div>
+            
+            <div class="flex-1 p-4 overflow-y-auto message-container" id="messages">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="mb-4 {% if message.role == 'user' %}ml-auto max-w-[80%]{% else %}mr-auto max-w-[80%]{% endif %}">
+                            <div class="{% if message.role == 'user' %}bg-indigo-100 text-indigo-900 ml-auto{% else %}bg-gray-100 text-gray-900{% endif %} p-3 rounded-lg">
+                                <div class="font-semibold mb-1">{{ message.get_role_display }}</div>
+                                <div>{{ message.content|linebreaks }}</div>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">{{ message.timestamp|date:"M d, Y H:i" }}</div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="flex items-center justify-center h-full">
+                        <div class="text-center text-gray-500">
+                            <p>No messages yet. Start the conversation!</p>
+                        </div>
+                    </div>
+                {% endif %}
+                <div id="typing-indicator" class="hidden mb-4 mr-auto max-w-[80%]">
+                    <div class="bg-gray-100 text-gray-900 p-3 rounded-lg">
+                        <div class="font-semibold mb-1">Assistant</div>
+                        <div class="typing-indicator"></div>
+                    </div>
+                </div>
+                <div id="response-container" class="mb-4 mr-auto max-w-[80%] hidden">
+                    <div class="bg-gray-100 text-gray-900 p-3 rounded-lg">
+                        <div class="font-semibold mb-1">Assistant</div>
+                        <div id="streaming-response"></div>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1" id="response-timestamp"></div>
+                </div>
+            </div>
+            
+            <div class="p-4 border-t">
+                <form id="chat-form" class="flex">
+                    {% csrf_token %}
+                    <input type="text" id="message-input" class="flex-1 border rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Type your message..." required>
+                    <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-r-lg hover:bg-indigo-700">Send</button>
+                </form>
+            </div>
+        </div>
+    </div> -->
+    <div id="chat-container" data-session-id="{{ session.id }}">
+        <h1>Chat with Persona AI</h1>
+        
+        <div id="message-container">
+            <!-- Messages will be inserted here dynamically -->
+            {% for message in messages %}
+                <div class="message {% if message.role == 'USER' %}user-message{% else %}assistant-message{% endif %}">
+                    {{ message.content|safe }}
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div id="input-container">
+            <input id="message-input" type="text" placeholder="Type your message here...">
+            <button id="send-button">Send</button>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // WebSocket chat client for PersonaAI
+// Include this in your HTML template
+
+document.addEventListener('DOMContentLoaded', function() {
+    const messageContainer = document.getElementById('message-container');
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+    
+    // Get session ID from the URL or a data attribute
+    const sessionId = document.querySelector('[data-session-id]').getAttribute('data-session-id');
+    
+    // Connect to WebSocket
+    const chatSocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/chat/' + sessionId + '/'
+    );
+    
+    let assistantMessageElement = null;
+    
+    chatSocket.onopen = function(e) {
+        console.log('WebSocket connection established');
+        addSystemMessage('Connected to chat session');
+    };
+    
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        
+        switch(data.type) {
+            case 'assistant_response_start':
+                // Create a new message element for the assistant's response
+                assistantMessageElement = document.createElement('div');
+                assistantMessageElement.className = 'message assistant-message';
+                messageContainer.appendChild(assistantMessageElement);
+                break;
+                
+            case 'assistant_response_chunk':
+                // Append the chunk to the current assistant message
+                if (assistantMessageElement) {
+                    assistantMessageElement.innerHTML += data.message;
+                    // Auto-scroll to bottom
+                    messageContainer.scrollTop = messageContainer.scrollHeight;
+                }
+                break;
+                
+            case 'assistant_response_end':
+                // Message is complete, apply any final formatting
+                if (assistantMessageElement) {
+                    // Apply Markdown formatting or other post-processing here if needed
+                    assistantMessageElement = null;
+                }
+                break;
+                
+            default:
+                console.log('Unknown message type:', data);
+        }
+    };
+    
+    chatSocket.onclose = function(e) {
+        addSystemMessage('Chat connection closed. Please refresh the page to reconnect.');
+        console.log('WebSocket connection closed');
+    };
+    
+    chatSocket.onerror = function(e) {
+        addSystemMessage('Error with the chat connection.');
+        console.error('WebSocket error:', e);
+    };
+    
+    // Send message when button is clicked
+    sendButton.addEventListener('click', sendMessage);
+    
+    // Send message when Enter key is pressed
+    messageInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+    
+    function sendMessage() {
+        const message = messageInput.value.trim();
+        if (message) {
+            // Add user message to UI
+            const userMessageElement = document.createElement('div');
+            userMessageElement.className = 'message user-message';
+            userMessageElement.textContent = message;
+            messageContainer.appendChild(userMessageElement);
+            
+            // Send message through WebSocket
+            chatSocket.send(JSON.stringify({
+                'message': message,
+                'session_id': sessionId
+            }));
+            
+            // Clear input
+            messageInput.value = '';
+            
+            // Auto-scroll to bottom
+            messageContainer.scrollTop = messageContainer.scrollHeight;
+        }
+    }
+    
+    function addSystemMessage(text) {
+        const systemMessageElement = document.createElement('div');
+        systemMessageElement.className = 'message system-message';
+        systemMessageElement.textContent = text;
+        messageContainer.appendChild(systemMessageElement);
+        
+        // Auto-scroll to bottom
+        messageContainer.scrollTop = messageContainer.scrollHeight;
+    }
+});
+    // function scrollToBottom() {
+    //     const messagesContainer = document.getElementById('messages');
+    //     messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    // }
+    
+    // document.addEventListener('DOMContentLoaded', function() {
+    //     scrollToBottom();
+        
+    //     const chatForm = document.getElementById('chat-form');
+    //     const messageInput = document.getElementById('message-input');
+    //     const messagesContainer = document.getElementById('messages');
+    //     const typingIndicator = document.getElementById('typing-indicator');
+    //     const responseContainer = document.getElementById('response-container');
+    //     const streamingResponse = document.getElementById('streaming-response');
+    //     const responseTimestamp = document.getElementById('response-timestamp');
+        
+    //     const sessionId = "{{ session.id|escapejs }}";
+    //     const socket = new WebSocket(`ws://${window.location.host}/ws/chat/${sessionId}/`);
+        
+    //     socket.addEventListener('open', (event) => {
+    //         console.log('WebSocket connection established');
+    //     });
+        
+    //     socket.addEventListener('message', (event) => {
+    //         const data = JSON.parse(event.data);
+    //         console.log('Message from server:', data);
+            
+    //         if (data.type === 'assistant_response_start') {
+    //             typingIndicator.classList.remove('hidden');
+    //             responseContainer.classList.add('hidden');
+    //             streamingResponse.innerHTML = '';
+    //             scrollToBottom();
+    //         } else if (data.type === 'assistant_response_chunk') {
+    //             if (typingIndicator.classList.contains('hidden')) {
+    //                 typingIndicator.classList.remove('hidden');
+    //                 responseContainer.classList.add('hidden');
+    //             }
+                
+    //             streamingResponse.innerHTML += data.message;
+    //         } else if (data.type === 'assistant_response_end') {
+    //             typingIndicator.classList.add('hidden');
+    //             responseContainer.classList.remove('hidden');
+                
+    //             const now = new Date();
+    //             responseTimestamp.textContent = now.toLocaleString();
+                
+    //             streamingResponse.innerHTML = streamingResponse.innerHTML.replace(/\n/g, '<br>');
+                
+    //             scrollToBottom();
+    //         }
+    //     });
+        
+    //     socket.addEventListener('close', (event) => {
+    //         console.log('WebSocket connection closed');
+    //     });
+        
+    //     socket.addEventListener('error', (event) => {
+    //         console.error('WebSocket error:', event);
+    //     });
+        
+    //     chatForm.addEventListener('submit', function(e) {
+    //         e.preventDefault();
+            
+    //         const message = messageInput.value.trim();
+    //         if (!message) return;
+            
+    //         const userMessageDiv = document.createElement('div');
+    //         userMessageDiv.className = 'mb-4 ml-auto max-w-[80%]';
+    //         userMessageDiv.innerHTML = `
+    //             <div class="bg-indigo-100 text-indigo-900 ml-auto p-3 rounded-lg">
+    //                 <div class="font-semibold mb-1">User</div>
+    //                 <div>${message.replace(/\n/g, '<br>')}</div>
+    //             </div>
+    //             <div class="text-xs text-gray-500 mt-1">${new Date().toLocaleString()}</div>
+    //         `;
+            
+    //         const emptyState = messagesContainer.querySelector('.flex.items-center.justify-center');
+    //         if (emptyState) {
+    //             emptyState.remove();
+    //         }
+            
+    //         messagesContainer.appendChild(userMessageDiv);
+            
+    //         socket.send(JSON.stringify({
+    //             'message': message,
+    //             'session_id': sessionId
+    //         }));
+            
+    //         messageInput.value = '';
+    //         messageInput.focus();
+            
+    //         scrollToBottom();
+    //     });
+    // });
+</script>
+{% endblock %}
