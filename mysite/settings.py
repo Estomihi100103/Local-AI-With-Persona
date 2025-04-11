@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'accounts',
     'chat',
     'documents',
+    'persona',
 
     # Tailwind CSS
     'tailwind',

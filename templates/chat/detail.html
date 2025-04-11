@@ -3,21 +3,7 @@
 {% block title %}{{ session.title }} - RAG Chatbot{% endblock %}
 
 {% block extra_head %}
-<!-- <style>
-    .message-container {
-        max-height: calc(100vh - 300px);
-        overflow-y: auto;
-    }
-    .typing-indicator::after {
-        content: '...';
-        animation: typing 1s infinite;
-    }
-    @keyframes typing {
-        0% { content: '.'; }
-        33% { content: '..'; }
-        66% { content: '...'; }
-    }
-</style> -->
+
 <style>
     #chat-container {
         max-width: 800px;
@@ -110,75 +96,6 @@
 {% endblock %}
 
 {% block content %}
-    <!-- <div class="flex flex-col md:flex-row gap-6 h-[calc(100vh-150px)]">
-        <div class="w-full md:w-64 bg-white rounded-lg shadow p-4 overflow-y-auto">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold">Your Chats</h2>
-                <form action="{% url 'create_session' %}" method="post" class="inline">
-                    {% csrf_token %}
-                    <button type="submit" class="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700">
-                        New Chat
-                    </button>
-                </form>
-            </div>
-            
-            <div class="space-y-2">
-                {% for chat in chat_sessions %}
-                    <a href="{% url 'chat_detail' chat.id %}" class="block p-2 rounded hover:bg-gray-100 {% if chat.id == session.id %}bg-indigo-100{% endif %}">
-                        <div class="font-medium truncate">{{ chat.title }}</div>
-                        <div class="text-xs text-gray-500">{{ chat.updated_at|date:"M d, Y" }}</div>
-                    </a>
-                {% endfor %}
-            </div>
-        </div>
-        
-        <div class="flex-1 flex flex-col bg-white rounded-lg shadow">
-            <div class="p-4 border-b">
-                <h1 class="text-xl font-bold">{{ session.title }}</h1>
-            </div>
-            
-            <div class="flex-1 p-4 overflow-y-auto message-container" id="messages">
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="mb-4 {% if message.role == 'user' %}ml-auto max-w-[80%]{% else %}mr-auto max-w-[80%]{% endif %}">
-                            <div class="{% if message.role == 'user' %}bg-indigo-100 text-indigo-900 ml-auto{% else %}bg-gray-100 text-gray-900{% endif %} p-3 rounded-lg">
-                                <div class="font-semibold mb-1">{{ message.get_role_display }}</div>
-                                <div>{{ message.content|linebreaks }}</div>
-                            </div>
-                            <div class="text-xs text-gray-500 mt-1">{{ message.timestamp|date:"M d, Y H:i" }}</div>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="flex items-center justify-center h-full">
-                        <div class="text-center text-gray-500">
-                            <p>No messages yet. Start the conversation!</p>
-                        </div>
-                    </div>
-                {% endif %}
-                <div id="typing-indicator" class="hidden mb-4 mr-auto max-w-[80%]">
-                    <div class="bg-gray-100 text-gray-900 p-3 rounded-lg">
-                        <div class="font-semibold mb-1">Assistant</div>
-                        <div class="typing-indicator"></div>
-                    </div>
-                </div>
-                <div id="response-container" class="mb-4 mr-auto max-w-[80%] hidden">
-                    <div class="bg-gray-100 text-gray-900 p-3 rounded-lg">
-                        <div class="font-semibold mb-1">Assistant</div>
-                        <div id="streaming-response"></div>
-                    </div>
-                    <div class="text-xs text-gray-500 mt-1" id="response-timestamp"></div>
-                </div>
-            </div>
-            
-            <div class="p-4 border-t">
-                <form id="chat-form" class="flex">
-                    {% csrf_token %}
-                    <input type="text" id="message-input" class="flex-1 border rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Type your message..." required>
-                    <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-r-lg hover:bg-indigo-700">Send</button>
-                </form>
-            </div>
-        </div>
-    </div> -->
     <div id="chat-container" data-session-id="{{ session.id }}">
         <h1>Chat with Persona AI</h1>
         
@@ -309,99 +226,5 @@ document.addEventListener('DOMContentLoaded', function() {
         messageContainer.scrollTop = messageContainer.scrollHeight;
     }
 });
-    // function scrollToBottom() {
-    //     const messagesContainer = document.getElementById('messages');
-    //     messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    // }
-    
-    // document.addEventListener('DOMContentLoaded', function() {
-    //     scrollToBottom();
-        
-    //     const chatForm = document.getElementById('chat-form');
-    //     const messageInput = document.getElementById('message-input');
-    //     const messagesContainer = document.getElementById('messages');
-    //     const typingIndicator = document.getElementById('typing-indicator');
-    //     const responseContainer = document.getElementById('response-container');
-    //     const streamingResponse = document.getElementById('streaming-response');
-    //     const responseTimestamp = document.getElementById('response-timestamp');
-        
-    //     const sessionId = "{{ session.id|escapejs }}";
-    //     const socket = new WebSocket(`ws://${window.location.host}/ws/chat/${sessionId}/`);
-        
-    //     socket.addEventListener('open', (event) => {
-    //         console.log('WebSocket connection established');
-    //     });
-        
-    //     socket.addEventListener('message', (event) => {
-    //         const data = JSON.parse(event.data);
-    //         console.log('Message from server:', data);
-            
-    //         if (data.type === 'assistant_response_start') {
-    //             typingIndicator.classList.remove('hidden');
-    //             responseContainer.classList.add('hidden');
-    //             streamingResponse.innerHTML = '';
-    //             scrollToBottom();
-    //         } else if (data.type === 'assistant_response_chunk') {
-    //             if (typingIndicator.classList.contains('hidden')) {
-    //                 typingIndicator.classList.remove('hidden');
-    //                 responseContainer.classList.add('hidden');
-    //             }
-                
-    //             streamingResponse.innerHTML += data.message;
-    //         } else if (data.type === 'assistant_response_end') {
-    //             typingIndicator.classList.add('hidden');
-    //             responseContainer.classList.remove('hidden');
-                
-    //             const now = new Date();
-    //             responseTimestamp.textContent = now.toLocaleString();
-                
-    //             streamingResponse.innerHTML = streamingResponse.innerHTML.replace(/\n/g, '<br>');
-                
-    //             scrollToBottom();
-    //         }
-    //     });
-        
-    //     socket.addEventListener('close', (event) => {
-    //         console.log('WebSocket connection closed');
-    //     });
-        
-    //     socket.addEventListener('error', (event) => {
-    //         console.error('WebSocket error:', event);
-    //     });
-        
-    //     chatForm.addEventListener('submit', function(e) {
-    //         e.preventDefault();
-            
-    //         const message = messageInput.value.trim();
-    //         if (!message) return;
-            
-    //         const userMessageDiv = document.createElement('div');
-    //         userMessageDiv.className = 'mb-4 ml-auto max-w-[80%]';
-    //         userMessageDiv.innerHTML = `
-    //             <div class="bg-indigo-100 text-indigo-900 ml-auto p-3 rounded-lg">
-    //                 <div class="font-semibold mb-1">User</div>
-    //                 <div>${message.replace(/\n/g, '<br>')}</div>
-    //             </div>
-    //             <div class="text-xs text-gray-500 mt-1">${new Date().toLocaleString()}</div>
-    //         `;
-            
-    //         const emptyState = messagesContainer.querySelector('.flex.items-center.justify-center');
-    //         if (emptyState) {
-    //             emptyState.remove();
-    //         }
-            
-    //         messagesContainer.appendChild(userMessageDiv);
-            
-    //         socket.send(JSON.stringify({
-    //             'message': message,
-    //             'session_id': sessionId
-    //         }));
-            
-    //         messageInput.value = '';
-    //         messageInput.focus();
-            
-    //         scrollToBottom();
-    //     });
-    // });
 </script>
 {% endblock %}

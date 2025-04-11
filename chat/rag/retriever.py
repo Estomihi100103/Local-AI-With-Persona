@@ -32,9 +32,6 @@ class DocumentRetriever(BaseRetriever):
         
     def get_relevant_documents(self, query: str, *, run_manager: Optional[Any] = None) -> List[LangChainDocument]:
         """Retrieve relevant document chunks for a query with similarity search."""
-        
-        #print query yang diterima
-        print(f"Query received: {query}")
         try:
             # Menggunakan similarity_search dari LangChain
             documents = self.vectorstore.similarity_search_with_score(
