@@ -73,7 +73,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-     "django_browser_reload.middleware.BrowserReloadMiddleware",
+    "django_browser_reload.middleware.BrowserReloadMiddleware",
 ]
 
 ROOT_URLCONF = 'mysite.urls'
@@ -184,7 +184,7 @@ LANGCHAIN_TRACING_V2 = True
 VECTOR_STORE_PATH = os.path.join(BASE_DIR, 'vector_store')
 
 
-
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 # set OPENAI_API_KEY=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
 

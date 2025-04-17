@@ -1,10 +1,10 @@
 from langchain_ollama import ChatOllama
 
-def get_ollama_instance(callbacks=None):
+def get_ollama_instance(model='gemma3:1b', callbacks=None):
     """Create and return an LLM instance with specified parameters."""
-    print("Using Ollama Lokal ")
+    print(f"Using Ollama model: {model}")
     return ChatOllama(
-        model='gemma3:1b',
+        model=model,
         streaming=True,
         callbacks=callbacks,
     )

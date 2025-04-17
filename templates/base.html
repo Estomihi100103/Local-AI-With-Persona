@@ -1,45 +1,50 @@
 {% load static tailwind_tags %}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}RAG Chatbot{% endblock %}</title>
+    <title>{% block title %}AI Persona ChatBot{% endblock %}</title>
     {% tailwind_css %}
+    <!-- Alpine.js CDN -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/focus@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        [x-cloak] {
+            display: none;
+        }
+    </style>
+    <!-- Base Styles -->
+    <style>
+        :root {
+            --color-primary: #4f46e5;
+            --color-primary-dark: #4338ca;
+            --color-primary-light: #e0e7ff;
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        .smooth-transition {
+            transition: all 0.3s ease;
+        }
+        /* Additional styles for sidebar */
+        .sidebar {
+            transition: transform 0.3s ease;
+        }
+    </style>
     {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-gray-100 min-h-screen">
-    <nav class="bg-indigo-600 text-white p-4 shadow-md">
-        <div class="container mx-auto flex justify-between items-center">
-            <a href="{% url 'chat_home' %}" class="text-xl font-bold">RAG Chatbot</a>
-            <div class="space-x-4">
-                {% if user.is_authenticated %}
-                    {% if user.profile.is_admin %}
-                        <a href="{% url 'document_list' %}" class="hover:text-indigo-200">Documents</a>
-                    {% endif %}
-                    <span>Welcome, {{ user.username }}</span>
-                    <form method="POST" action="{% url 'logout' %}" class="inline">
-                        {% csrf_token %}
-                        <button type="submit" class="bg-indigo-700 px-3 py-1 rounded hover:bg-indigo-800">Logout</button>
-                    </form>                {% else %}
-                    <a href="{% url 'login' %}" class="hover:text-indigo-200">Login</a>
-                {% endif %}
-            </div>
-        </div>
-    </nav>
+<body class="bg-gray-50 min-h-screen text-gray-800">
+    {% include 'components/header.html' %}
     
-    <div class="container mx-auto py-6 px-4">
-        {% if messages %}
-            <div class="mb-4">
-                {% for message in messages %}
-                    <div class="p-4 rounded {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-        
+    <main class="min-h-screen">
         {% block content %}{% endblock %}
-    </div>
+    </main>
     
     {% block extra_scripts %}{% endblock %}
 </body>

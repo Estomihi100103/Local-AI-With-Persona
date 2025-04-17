@@ -9,6 +9,8 @@ class ChatSession(models.Model):
     title = models.CharField(max_length=255, default="New Chat")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    use_persona = models.BooleanField(default=False)
+    selected_model = models.CharField(max_length=255, default="gemma3:1b", blank=True, null=True)
     
     def __str__(self):
         return f"{self.title} - {self.user.username}"

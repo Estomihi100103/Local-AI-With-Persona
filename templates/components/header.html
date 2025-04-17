@@ -1,0 +1,37 @@
+<!-- {% comment %} components/header.html {% endcomment %}
+
+<header class="bg-gradient-to-r from-indigo-600 to-indigo-800 text-white p-4 shadow-lg h-16 fixed top-0 left-0 right-0 z-30">
+    <div class="container mx-auto flex justify-between items-center h-full">
+        <div class="flex items-center space-x-1">
+            <a href="{% url 'chat_home' %}" class="flex items-center text-xl font-bold hover:text-white transition duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
+                    <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z" />
+                </svg>
+                AI Persona
+            </a>
+        </div>
+        
+        <div class="flex items-center space-x-4">
+            {% if user.is_authenticated %}
+                {% if user.profile.is_admin %}
+                    <a href="{% url 'document_list' %}" class="hidden md:flex items-center px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
+                        </svg>
+                        Documents
+                    </a>
+                {% endif %}
+                <span class="hidden md:inline-block text-sm font-medium">{{ user.username }}</span>
+                <form method="POST" action="{% url 'logout' %}" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="bg-white text-indigo-700 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition font-medium text-sm focus:ring-2 focus:ring-white">
+                        Logout
+                    </button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}" class="text-white hover:text-indigo-200 transition">Login</a>
+            {% endif %}
+        </div>
+    </div>
+</header> -->

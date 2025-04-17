@@ -1,60 +1,118 @@
 {% extends 'base.html' %}
 
-{% block title %}Chat Home - RAG Chatbot{% endblock %}
+{% block title %}Chat Home - AI Persona{% endblock %}
 
 {% block content %}
+<div class="container mx-auto py-6 px-4" x-data="{ sidebarOpen: true }">
     <div class="flex flex-col md:flex-row gap-6">
         <!-- Sidebar -->
-        <div class="w-full md:w-64 bg-white rounded-lg shadow p-4">
+        <div x-show="sidebarOpen" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform -translate-x-full"
+             x-transition:enter-end="opacity-100 transform translate-x-0"
+             x-transition:leave="transition ease-in duration-300"
+             x-transition:leave-start="opacity-100 transform translate-x-0"
+             x-transition:leave-end="opacity-0 transform -translate-x-full"
+             class="w-full md:w-72 bg-white rounded-lg shadow-md p-4">
+            
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-lg font-bold">Your Chats</h2>
                 <form action="{% url 'create_session' %}" method="post" class="inline">
                     {% csrf_token %}
-                    <button type="submit" class="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700">
-                        New Chat
+                    <button type="submit" class="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700 transition">
+                        <i class="fas fa-plus mr-1"></i> New Chat
                     </button>
                 </form>
             </div>
             
-            <div class="space-y-2">
+            <div class="space-y-2 max-h-96 overflow-y-auto">
                 {% if chat_sessions %}
                     {% for session in chat_sessions %}
-                        <a href="{% url 'chat_detail' session.id %}" class="block p-2 rounded hover:bg-gray-100 {% if session == active_session %}bg-indigo-100{% endif %}">
+                        <a href="{% url 'chat_detail' session.id %}" 
+                           class="block p-3 rounded-lg hover:bg-gray-100 transition {% if session == active_session %}bg-indigo-100{% endif %}">
                             <div class="font-medium truncate">{{ session.title }}</div>
                             <div class="text-xs text-gray-500">{{ session.updated_at|date:"M d, Y" }}</div>
                         </a>
                     {% endfor %}
                 {% else %}
-                    <p class="text-gray-500">No chats yet. Start a new one!</p>
+                    <p class="text-gray-500 text-center py-4">No chats yet. Start a new one!</p>
                 {% endif %}
             </div>
         </div>
         
+        <!-- Toggle Button for Mobile -->
+        <button @click="sidebarOpen = !sidebarOpen" 
+                class="md:hidden fixed bottom-4 left-4 z-10 bg-indigo-600 text-white p-3 rounded-full shadow-lg">
+            <svg x-show="!sidebarOpen" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+            <svg x-show="sidebarOpen" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+        
         <!-- Main Content -->
-        <div class="flex-1 bg-white rounded-lg shadow p-6">
-            <h1 class="text-2xl font-bold mb-6">Welcome to AI Persona</h1>
-            <p class="mb-4">This chatbot uses Retrieval-Augmented Generation (RAG) to provide accurate answers based on your documents.</p>
+        <div class="flex-1 bg-white rounded-lg shadow-md p-6">
+            <h1 class="text-2xl font-bold mb-6 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-2 text-indigo-600" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" />
+                </svg>
+                Welcome to AI Persona
+            </h1>
             
-            <div class="bg-indigo-50 rounded-lg p-4 mb-6">
-                <h2 class="text-lg font-semibold mb-2">How it works:</h2>
-                <ul class="list-disc list-inside space-y-1 text-gray-700">
-                    <li>Start a new chat using the button on the left</li>
-                    <li>Ask questions related to your uploaded documents</li>
-                    <li>The chatbot will retrieve relevant information to provide accurate answers</li>
-                    <li>Your conversation history is saved for future reference</li>
+            <p class="mb-6 text-gray-700">This intelligent chatbot uses Retrieval-Augmented Generation (RAG) to provide accurate answers based on your documents. Ask any question and get relevant information instantly.</p>
+            
+            <div class="bg-indigo-50 rounded-lg p-6 mb-8 border border-indigo-100">
+                <h2 class="text-lg font-semibold mb-4 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-indigo-600" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                    </svg>
+                    How it works:
+                </h2>
+                <ul class="space-y-3 text-gray-700">
+                    <li class="flex items-start">
+                        <span class="bg-indigo-600 text-white rounded-full w-6 h-6 flex items-center justify-center mr-2 flex-shrink-0">1</span>
+                        <span>Start a new chat using the button on the left sidebar</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="bg-indigo-600 text-white rounded-full w-6 h-6 flex items-center justify-center mr-2 flex-shrink-0">2</span>
+                        <span>Ask questions related to your uploaded documents</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="bg-indigo-600 text-white rounded-full w-6 h-6 flex items-center justify-center mr-2 flex-shrink-0">3</span>
+                        <span>The chatbot will retrieve relevant information to provide accurate answers</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="bg-indigo-600 text-white rounded-full w-6 h-6 flex items-center justify-center mr-2 flex-shrink-0">4</span>
+                        <span>Your conversation history is saved for future reference</span>
+                    </li>
                 </ul>
             </div>
             
             {% if not chat_sessions %}
+                <div class="text-center p-8 bg-gray-50 rounded-lg border border-gray-200">
+                    <h3 class="text-xl font-semibold mb-4">Ready to start?</h3>
+                    <form action="{% url 'create_session' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition flex items-center justify-center mx-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
+                            </svg>
+                            Start Your First Chat
+                        </button>
+                    </form>
+                </div>
+            {% else %}
                 <div class="text-center">
                     <form action="{% url 'create_session' %}" method="post">
                         {% csrf_token %}
-                        <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
-                            Start Your First Chat
+                        <button type="submit" class="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition">
+                            <i class="fas fa-comment-dots mr-1"></i> Start New Conversation
                         </button>
                     </form>
                 </div>
             {% endif %}
         </div>
     </div>
+</div>
 {% endblock %}

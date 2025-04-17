@@ -9,9 +9,9 @@ from langchain_community.vectorstores import Chroma
 
 class DocumentRetriever(BaseRetriever):
     """Retriever that uses ChromaDB to retrieve document chunks based on embeddings."""
-    n_results: int = Field(default=3, description="Number of results to return")
+    n_results: int = Field(default=2, description="Number of results to return")
     vectorstore: Chroma = None 
-    def __init__(self, n_results: int = 3):
+    def __init__(self, n_results: int = 2):
         super().__init__()
         self.n_results = n_results
         self.tags = ["chroma", "document_retriever"]

@@ -1,0 +1,20 @@
+{% comment %} components/message.html {% endcomment %}
+
+<div class="message {% if message.role == 'USER' %}user-message{% else %}assistant-message{% endif %}">
+    {% if message.role == 'USER' %}
+        <div class="flex justify-end items-center mb-1 text-xs text-indigo-800 font-medium">
+            <span>You</span>
+            <span class="ml-2 text-gray-500">{{ message.created_at|date:"g:i A" }}</span>
+        </div>
+    {% else %}
+        <div class="flex items-center mb-1 text-xs text-gray-700 font-medium">
+            <div class="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-white mr-1 text-xs">A</div>
+            <span>AI Persona</span>
+            <span class="ml-2 text-gray-500">{{ message.created_at|date:"g:i A" }}</span>
+        </div>
+    {% endif %}
+    
+    <div class="message-content">
+        {{ message.content|safe }}
+    </div>
+</div>
